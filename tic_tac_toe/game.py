@@ -1,8 +1,15 @@
 """Tic-Tac-Toe Game"""
 
+import itertools
+import os
+
+# Board Constants
 NUM_ROWS = 3
 NUM_COLS = 3
 SEPARATOR = '---|---|---\n'
+
+# Game Constants
+GAME_PIECES = ['X', 'O']
 
 
 def all_same(items):
@@ -28,8 +35,8 @@ class Board:
     def add_position(self, slot, mark):
         if type(self.board[slot]) is int:
             self.board[slot] = mark
-        else:
-            print('Already full')
+            return True
+        return False
 
     def check_victory(self):
         """Maybe check victory or check if catz game
@@ -78,7 +85,7 @@ class Board:
 
         return board_list
 
-    def draw(self):
+    def draw_board(self):
         """ASCII representation of game"""
 
         # convert board dictionary to board list
@@ -97,19 +104,68 @@ class Board:
         return board_text
 
     def __repr__(self):
-        return self.draw()
+        return self.draw_board()
+
+
+class TicTacToe:
+    """Game class which holds all game information"""
+
+    def __init__(self):
+        self.board = Board()
+        self.game_pieces_cycle = itertools.cycle(GAME_PIECES)
+        self.turn = next(self.game_pieces_cycle)
+
+    def __repr__(self):
+        return f'{self.board}'
+
+    def next_turn(self):
+        self.turn = next(self.game_pieces_cycle)
+
+    def catz_game(self):
+        return (not self.board.check_victory() and
+                self.board.is_full())
+
+    def check_victory(self):
+        return self.board.check_victory()
+
+    def player_turn(self, position):
+        """Walk thru the process of a player's turn"""
+        try:
+            position = int(position)
+        except ValueError:
+            return (False, 'Please enter a number')
+
+        if not (1 <= position <= 9):
+            return (False, 'Please enter a valid position (1-9)')
+
+        if not self.board.add_position(position, self.turn):
+            return (False, 'Position is already taken, try again')
+
+        return (True, 'All good')
+
+    def restart(self):
+        self.board = Board()
+        self.turn = GAME_PIECES[0]
 
 
 if __name__ == '__main__':
-    new_game = Board()
-    print(new_game)
-    new_game.add_position(1, 'X')
-    new_game.check_victory()
-
-    # Basic idea:
-    #   3. Write tests
-    #   4. Design AI
-    #   5. Reach is creating neural network on Tic Tac Toe and try on Connect 4
+    game = TicTacToe()
 
     # Game Loop
-    #   Create game, X's turn. O's turn, etc etc
+    while True:
+        # GUI
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(game)
+        print(f"{game.turn}'s turn.")
+
+        # Actual Game Loop
+        pos = input('Enter a position: ')
+        success, msg = game.player_turn(pos)
+        if not success:
+            print(msg)
+            continue
+
+        if game.check_victory():
+            break
+
+        game.next_turn()
