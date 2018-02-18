@@ -175,4 +175,8 @@ if __name__ == '__main__':
         if game.check_victory():
             break
 
+        if game.catz_game():
+            print("Cat's Game!")
+            break
+
         game.next_turn()
