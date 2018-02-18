@@ -2,6 +2,7 @@
 
 import itertools
 import os
+from typing import NamedTuple
 
 # Board Constants
 NUM_ROWS = 3
@@ -14,6 +15,11 @@ GAME_PIECES = ['X', 'O']
 
 def all_same(items):
     return all(x == items[0] for x in items)
+
+
+class GameStatus(NamedTuple):
+    success: bool
+    msg: str
 
 
 class Board:
@@ -122,26 +128,27 @@ class TicTacToe:
         self.turn = next(self.game_pieces_cycle)
 
     def catz_game(self):
+        """Check to see if cat's game"""
         return (not self.board.check_victory() and
                 self.board.is_full())
 
     def check_victory(self):
         return self.board.check_victory()
 
-    def player_turn(self, position):
+    def process_player_turn(self, position):
         """Walk thru the process of a player's turn"""
         try:
             position = int(position)
         except ValueError:
-            return (False, 'Please enter a number')
+            return GameStatus(False, 'Please enter a number')
 
         if not (1 <= position <= 9):
-            return (False, 'Please enter a valid position (1-9)')
+            return GameStatus(False, 'Please enter a valid position (1-9)')
 
         if not self.board.add_position(position, self.turn):
-            return (False, 'Position is already taken, try again')
+            return GameStatus(False, 'Position is already taken, try again')
 
-        return (True, 'All good')
+        return GameStatus(True, 'All good')
 
     def restart(self):
         self.board = Board()
@@ -158,11 +165,11 @@ if __name__ == '__main__':
         print(game)
         print(f"{game.turn}'s turn.")
 
-        # Actual Game Loop
-        pos = input('Enter a position: ')
-        success, msg = game.player_turn(pos)
-        if not success:
-            print(msg)
+        # Game Actions
+        position = input('Enter a position: ')
+        status = game.process_player_turn(position)
+        if not status.success:
+            print(status.msg)
             continue
 
         if game.check_victory():
