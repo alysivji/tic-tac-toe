@@ -5,6 +5,10 @@ NUM_COLS = 3
 SEPARATOR = '---|---|---\n'
 
 
+def all_same(items):
+    return all(x == items[0] for x in items)
+
+
 class Board:
     """The board is made up of squares, stored as a mapping"""
 
@@ -21,6 +25,41 @@ class Board:
 
         self.board = board
 
+    def add_position(self, slot, mark):
+        if type(self.board[slot]) is int:
+            self.board[slot] = mark
+        else:
+            print('Already full')
+
+    def check_victory(self):
+        """Maybe check victory or check if catz game
+        Or check if we can continue, or have function to do something like this
+        """
+        pass
+
+        # brute force it (maybe look at filter solution later)
+        winning_combos = [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+            [1, 4, 7],
+            [2, 5, 8],
+            [3, 6, 9],
+            [1, 5, 9],
+            [3, 5, 7],
+        ]
+
+        for winning_combo in winning_combos:
+            items = []
+            for square in winning_combo:
+                items.append(self.board[square])
+
+            if all_same(items):
+                print(f'{items[0]} wins!')
+                return True
+
+        return False
+
     def to_list(self):
         """Convert dictionary to list"""
 
@@ -35,9 +74,6 @@ class Board:
             board_list.append(curr_row)
 
         return board_list
-
-    def add_position(self, slot, mark):
-        pass
 
     def draw(self):
         """ASCII representation of game"""
@@ -63,9 +99,11 @@ class Board:
 
 if __name__ == '__main__':
     new_game = Board()
+    print(new_game)
+    new_game.add_position(1, 'X')
+    new_game.check_victory()
 
     # Basic idea:
-    #   1. Set it up so we can enter X and O into Board
     #   2. Check winning conditions
     #   3. Write tests
     #   4. Design AI
