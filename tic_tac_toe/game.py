@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import random
 from typing import NamedTuple
 
 # Board Constants
@@ -10,7 +11,9 @@ NUM_COLS = 3
 SEPARATOR = '---|---|---\n'
 
 # Game Constants
-GAME_PIECES = ['X', 'O']
+PLAYER_ONE = 'X'
+PLAYER_TWO = 'O'
+GAME_PIECES = [PLAYER_ONE, PLAYER_TWO]
 
 
 def all_same(items):
@@ -73,8 +76,11 @@ class Board:
 
         return False
 
+    def allowed_positions(self):
+        return list(set(self.board.values()) - set(GAME_PIECES))
+
     def is_full(self):
-        return set(self.board.values()) == set(['X', 'O'])
+        return set(self.board.values()) == set(GAME_PIECES)
 
     def to_list(self):
         """Convert dictionary to list"""
@@ -116,9 +122,15 @@ class Board:
 class TicTacToe:
     """Game class which holds all game information"""
 
-    def __init__(self):
+    def __init__(self, player):
         self.board = Board()
-        self.game_pieces_cycle = itertools.cycle(GAME_PIECES)
+
+        if player == 1:
+            player_info = [(PLAYER_ONE, 'Human'), (PLAYER_TWO, 'CPU')]
+        else:
+            player_info = [(PLAYER_ONE, 'CPU'), (PLAYER_TWO, 'Human')]
+
+        self.game_pieces_cycle = itertools.cycle(player_info)
         self.turn = next(self.game_pieces_cycle)
 
     def __repr__(self):
@@ -135,6 +147,9 @@ class TicTacToe:
     def check_victory(self):
         return self.board.check_victory()
 
+    def allowed_positions(self):
+        return self.board.allowed_positions()
+
     def process_player_turn(self, position):
         """Walk thru the process of a player's turn"""
         try:
@@ -145,7 +160,7 @@ class TicTacToe:
         if not (1 <= position <= 9):
             return GameStatus(False, 'Please enter a valid position (1-9)')
 
-        if not self.board.add_position(position, self.turn):
+        if not self.board.add_position(position, self.turn[0]):
             return GameStatus(False, 'Position is already taken, try again')
 
         return GameStatus(True, 'All good')
@@ -155,24 +170,38 @@ class TicTacToe:
         self.turn = GAME_PIECES[0]
 
 
+def draw_board(game):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print(game)
+
+
 if __name__ == '__main__':
-    game = TicTacToe()
+
+    # Does human want to go first or second
+    player = input('Player 1 or Player 2: ')
+    game = TicTacToe(int(player))
 
     # Game Loop
     while True:
         # GUI
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(game)
-        print(f"{game.turn}'s turn.")
+        draw_board(game)
 
-        # Game Actions
-        position = input('Enter a position: ')
+        turn_info = game.turn[1]
+        print(f"{turn_info}'s turn.")
+
+        if turn_info == 'CPU':
+            allowed_positions = game.allowed_positions()
+            position = random.choice(allowed_positions)
+        else:
+            position = input('Enter a position: ')
+
         status = game.process_player_turn(position)
         if not status.success:
             print(status.msg)
             continue
 
         if game.check_victory():
+            draw_board(game)
             break
 
         if game.catz_game():
@@ -180,3 +209,5 @@ if __name__ == '__main__':
             break
 
         game.next_turn()
+
+    draw_board(game)
