@@ -155,16 +155,20 @@ class TicTacToe:
         self.turn = GAME_PIECES[0]
 
 
+def draw_board(game):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print(game)
+
+
 if __name__ == '__main__':
     game = TicTacToe()
 
+    # GUI
+    draw_board(game)
+    print(f"{game.turn}'s turn.")
+
     # Game Loop
     while True:
-        # GUI
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(game)
-        print(f"{game.turn}'s turn.")
-
         # Game Actions
         position = input('Enter a position: ')
         status = game.process_player_turn(position)
@@ -173,10 +177,15 @@ if __name__ == '__main__':
             continue
 
         if game.check_victory():
+            draw_board(game)
             break
 
         if game.catz_game():
             print("Cat's Game!")
             break
+
+        # GUI
+        draw_board(game)
+        print(f"{game.turn}'s turn.")
 
         game.next_turn()
